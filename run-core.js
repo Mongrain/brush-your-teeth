@@ -4,6 +4,7 @@ const fs = require('fs')
 const Wechat = require('./src/wechat.js')
 const qrcode = require('qrcode-terminal')
 const schedule = require('node-schedule')
+const moment = require('moment')
 
 let bot
 /**
@@ -53,11 +54,13 @@ bot.on('logout', () => {
  * 如何发送消息
  */
 bot.on('login', () => {
+  const contacts = Object.values(bot.contacts)
   /**
    * 演示发送消息到文件传输助手
    * 通常回复消息时可以用 msg.FromUserName
    */
-  let ToUserName = '@@f937c3cb2c8ee2fc31575f09ba94091bf2a990f23376aa2d74d86cee76559b7b'
+  let ToUserName = (contacts.find(contact => contact.OriginalNickName === 'qqqserver-0001') || {}).UserName
+  let myself = (contacts.find(contact => contact.OriginalNickName === '潘为正') || {}).UserName
   /**
    * 开启定时器叫龟儿刷牙
    */
@@ -66,6 +69,14 @@ bot.on('login', () => {
      * 发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
      */
     bot.sendMsg('龟儿刷牙拉', ToUserName)
+      .catch(err => {
+        bot.emit('error', err)
+      })
+  })
+
+  schedule.scheduleJob('0 1-59 * * * *', () => {
+    const now = moment().format('YYYY-MM-DD HH:mm:ss')
+    bot.sendMsg(`heart beat ${now}`, myself)
       .catch(err => {
         bot.emit('error', err)
       })
